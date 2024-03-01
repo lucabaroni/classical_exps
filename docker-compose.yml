@@ -1,0 +1,15 @@
+version: '3.4'
+
+services:
+  classical_exps:
+    image: classical_exps
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+      args:
+        - GITHUB_USER=${GITHUB_USER}
+        - GITHUB_TOKEN=${GITHUB_TOKEN}
+    volumes:
+      - .:/project
+    env_file: .env
+    runtime: nvidia

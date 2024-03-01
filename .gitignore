@@ -1,0 +1,4 @@
+experiments_convnext/figures/*
+.env
+__pycache__/*
+*.pyc
