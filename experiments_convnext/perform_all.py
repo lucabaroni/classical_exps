@@ -1,10 +1,5 @@
 #%%
-import datajoint as dj 
 import os 
-dj.config["enable_python_native_blobs"] = True
-dj.config["database.host"] = os.environ["DJ_HOST"]
-dj.config["database.user"] = os.environ["DJ_USER"]
-dj.config["database.password"] = os.environ["DJ_PASSWORD"]
 import matplotlib.pyplot as plt
 
 import numpy as np
@@ -16,6 +11,7 @@ from imagen.image import BoundingBox
 from surroundmodulation.utils.misc import pickleread, picklesave
 from surroundmodulation.analyses import *
 
+#%%
 std = 0.05
 mean = 0
 orientations = np.linspace(0, np.pi, 37)[:-1]
@@ -25,8 +21,8 @@ img_res = [93, 93]
 size= [2.35,2.35]
 gap = 0.2
 
-idxs = np.array(pickleread('/project/experiment_data/convnext/gabor_idx.pickle'))
-
+# idxs = np.array(pickleread('/project/experiment_data/convnext/gabor_idx.pickle'))
+idxs = [0]
 device = f'cuda'
 
 #%%
@@ -78,7 +74,7 @@ for idx in tqdm(idxs):
         'oc_resps': oc_resps,
         'oc_stims': oc_stims,
         }
-    picklesave(f'/project/experiment_data/convnext/data_v4.pickle', d)
+    picklesave(f'/project/experiment_data/convnext/data_vtest.pickle', d)
 
 # %%
 d= pickleread('/project/experiment_data/convnext/data_v2.pickle')
