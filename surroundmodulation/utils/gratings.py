@@ -50,3 +50,22 @@ def present_all_full_field_gratings(model, device, return_max = False):
         return resp_d, d_max
     else:   
         return resp_d
+
+#%%
+for frequency in tqdm(np.linspace(0.1, 2, 20)):
+    for orientation in np.linspace(0, 360, 36):
+        input =torch.Tensor(np.stack([imagen.SineGrating(
+                orientation = orientation, 
+                frequency = frequency,
+                phase = phase,
+                bounds = BoundingBox(radius=6.67/2) ,
+                offset = 0,
+                scale = 1,
+                xdensity = 93/6.67,
+                ydensity = 93/6.67,
+            )().to(device).reshape(1,93,93) for phase in np.linspace(0, 360, 36)]))
+
+        input = rescale(input, 0, 1, pixel_min, pixel_max)
+
+print(input)
+# %%

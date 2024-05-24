@@ -1,4 +1,12 @@
 experiments_convnext/figures/*
+*.h5
 .env
 __pycache__/*
 *.pyc
+mathys_code/shareStim_NN13/
+mathys_code/plots/
+*.csv
+Luca
+mathys_code/depth_info.pickle
+mathys_code/project.code-workspace
+mathys_code/osef

@@ -28,6 +28,13 @@ device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
 
 def create_mei(model, std=0.05, seed=42, img_res = [93,93], pixel_min = -1.7876, pixel_max = 2.1919, gaussianblur=2., device=None, step_size=10, num_steps=1000):
+    ''' This function creates the Maximal Excitatory Image (MEI) (i.e the image that
+    elicit the greatest model's response)
+    it returns :
+    mei     : the image
+    mei_act : the response evoked with this image
+    '''
+
     if device==None:
         device = 'cuda' if torch.cuda.is_available() else 'cpu'
     random_seed = seed
@@ -55,6 +62,9 @@ def create_mei(model, std=0.05, seed=42, img_res = [93,93], pixel_min = -1.7876,
 
 
 def find_mask_center(mask):
+    ''' This functions permits to find the centroid coordinates of the mask
+    NB : Centroid = mass center = weighted center
+    '''
     # Create coordinate grids
     y, x = np.indices(mask.shape)
 
@@ -65,7 +75,14 @@ def find_mask_center(mask):
     # print(f"Centroid: x={centroid_x}, y={centroid_y}")
     return (centroid_x, centroid_y)
 
+#%%
 def create_mask_from_mei(mei, zscore_thresh = 1.5, closing_iters=2, gaussian_sigma =1):
+    '''Takes the MEI, then select the most iportant zones, smooth it up
+    Returns :
+    mask   : The mask = image (array) where non selective zones = 0 and selective zones = 1 (with transitions in between)
+    px, py : Position of the centroid of the mask (center of mass)
+    '''
+
     params = {
         'zscore_thresh' : zscore_thresh,
         'closing_iters' : closing_iters, 
@@ -78,11 +95,13 @@ def create_mask_from_mei(mei, zscore_thresh = 1.5, closing_iters=2, gaussian_sig
         mei = mei.squeeze()
 
     norm_mei = (mei - mei.mean()) / mei.std()
+    
 
     thresholded = np.abs(norm_mei) > params['zscore_thresh']
+    
     # Remove small holes in the thresholded image and connect any stranding pixels
     closed = ndimage.binary_closing(thresholded, iterations=params['closing_iters'])
-    #%%
+    
     # Remove any remaining small objects
     labeled = morphology.label(closed, connectivity=2)
     most_frequent = np.argmax(np.bincount(labeled.ravel())[1:]) + 1
@@ -113,6 +132,16 @@ def create_surround(
     gaussianblur=2., 
     device=None,
     ):
+    ''' This function uses gradiant ascent to find the maximal 
+        excitator or inhibitor surround of a MEI. The Mei is masked so it doen't change
+
+    Outputs :
+        full_surr     : image obtained with MEIcenter + optimised(MinOrMax)surround 
+        full_surr_act : resulting activation when the image is shown to the model
+        only_surr     : image containing only the optimised surround
+        only_surr_act : it's activation
+    '''
+
     if device==None:
         device = 'cuda' if torch.cuda.is_available() else 'cpu'
     random_seed = 42
@@ -122,20 +151,33 @@ def create_surround(
     sur_std = [center_std, surround_std]
     image_shape = (1, 1,*img_res)
     initial_image = torch.randn(image_shape, device=device)
+
     initial_image = initial_image * float(0.5)
     
     initial_image = initial_image
     model.to(device)
     model.eval()
     
+    # This is the functions that are applied to x (the image) after 
+    # each iteration of the gradient ascent so that the image stays "normalized"
+    # ChangeStd modifies the image so that it's std is changed to selected value ? 
+    # How is it changed ? And Why ?
+    # ClipRange makes sure that the image's pixel's values are between pixel_min and pixel_max
+    # Why we do that?
     postup_op = Compose([ops.ChangeStd(float(surround_std)), ops.ClipRange(pixel_min, pixel_max)])
+    
+    # This function receives the gradient of x (the imput), and precondition it (blurring/masking etc)
+    # Why ?
     if objective == 'max':
         gradient_f = ops.GaussianBlur(float(gaussianblur))
     elif objective == 'min':
         gradient_f = Compose([ops.GaussianBlur(float(gaussianblur)),ops.MultiplyBy(float(-1.))])
     else: 
         AssertionError('objective (of optimization) must be set to "min" or "max"')
+    
+    # Function that transforms x before sending it to the model. Changes std only outside the mask ?
     transform = ops.ChangeSurroundStd(mei, mei_mask, sur_std)
+
 
     only_surr, fevals, _ = featurevis.gradient_ascent(model, initial_image,
                                                             post_update=postup_op,
@@ -144,6 +186,7 @@ def create_surround(
                                                             step_size=10,
                                                             num_iterations=1000, 
                                                             print_iters=1001)
+
 
     full_surr = transform(only_surr).squeeze().cpu().numpy()
 
@@ -156,19 +199,25 @@ def create_surround(
 
     return full_surr, only_surr, full_surr_act, only_surr_act
 
+#%%
+
 def find_preferred_grating_parameters(
     model, 
     mei_mask, 
     orientations = np.linspace(0, np.pi, 37)[:-1],
     spatial_frequencies = np.linspace(1, 7, 25), 
     phases = np.linspace(0, 2*np.pi, 37)[:-1],
-    contrast = 0.2, 
+    contrast = 0.2,         #why so low ?
     img_res = [93,93], 
     pixel_min = -1.7876, 
     pixel_max = 2.1919, 
     device = None,
-    size = 2.35,
+    size = 2.35,            #size of the visual field ?
     ):
+    ''' This function tries every parameter and returns the best ones.
+        Basically it creates the gratings only in the mask
+        In order to use this I can only change "mei_mask" so it becomes a circular patch
+    '''
     if device==None:
         device = 'cuda' if torch.cuda.is_available() else 'cpu'
     model.to(device)
@@ -178,6 +227,7 @@ def find_preferred_grating_parameters(
         size = [size]*2
     print(size)
     for orientation in orientations:
+        print(orientation)
         for sf in spatial_frequencies:
             for phase in phases: 
                 # call center-surround
@@ -192,7 +242,7 @@ def find_preferred_grating_parameters(
                     ydensity = img_res[0]/size[0],
                 )())
                 grating = grating.reshape(1,*img_res).to(device)
-                grating = rescale(grating, 0, 1, 1, -1)*contrast #TODO fix contrast
+                grating = rescale(grating, 0, 1, -1, 1)*contrast #TODO fix contrast
                 # grating = rescale(grating, -1, 1, pixel_min, pixel_max)
                 grating = grating  * torch.Tensor(mei_mask).reshape(*grating.shape).to(device)
                 resp=model(grating.reshape(1,1,*img_res))
@@ -204,10 +254,14 @@ def find_preferred_grating_parameters(
                     stim_max = grating
     return max_ori, max_sf, max_phase, stim_max, resp_max
 
+
+
 def get_offset_in_degr(x_pix, x_size_in_pix, x_size_in_deg):
     x_deg = ((x_pix - x_size_in_pix/2) / (x_size_in_pix/2)) * x_size_in_deg/2
     return x_deg
 
+
+#%%
 def size_tuning_all_phases(
     model, 
     x_pix, 
@@ -228,10 +282,14 @@ def size_tuning_all_phases(
         size = [size]*2
     if device==None:
         device = 'cuda' if torch.cuda.is_available() else 'cpu'
+
     model.to(device)
     model.eval()
+
     resp = np.zeros([len(radii), len(phases)])
     gratings = np.zeros([len(radii), len(phases), *img_res])
+
+    #Why torch.no_grad here
     with torch.no_grad():
         for i, radius in enumerate(radii):
             for j, phase in enumerate(phases):
@@ -251,7 +309,7 @@ def size_tuning_all_phases(
 
                 c = imagen.Disk(smoothing=0.0,
                                 size=radius*2,
-                                scale=1.0,
+                                scale =1.0,
                                 bounds=BoundingBox(points = ((-size[1]/2, -size[0]/2), (size[1]/2, size[0]/2))),
                                 xdensity = img_res[1]/size[1],
                                 ydensity = img_res[0]/size[0], 
@@ -276,6 +334,29 @@ def size_tuning_all_phases(
         return top_radius, top_phase, top_grating, top_resp, resp, gratings
     else: 
         return top_radius, top_phase, top_grating, top_resp
+
+
+
+
+
+
+#%%
+# #TESTS TO DO !!!!!!!!!!!!!!
+# import pandas as pd
+# import matplotlib.pyplot as plt
+# from surroundmodulation.models import SingleCellModel
+# from nnvision.models.trained_models.v1_task_fine_tuned import v1_convnext_ensemble
+
+# mei = pd.read_csv('/project/experiments_convnext/test.csv', header = None).values
+# mei_mask, px, py = create_mask_from_mei(mei)
+# pixel_min = -1.7876
+# pixel_max = 2.1919
+# model = SingleCellModel(v1_convnext_ensemble, [0])
+# x = torch.Tensor(mei)print(type(model))
+
+# find_preferred_grating_parameters(model, mei_mask, orientations = np.linspace(0, np.pi, 37)[:-1],spatial_frequencies = np.linspace(1, 7, 25), phases = np.linspace(0, 2*np.pi, 37)[:-1],contrast = 0.6, img_res = [93,93], pixel_min = -1.7876, pixel_max = 2.1919, device = None,size = 2.35)
+#%%
+
 
 def get_orientation_contrast_stim(
     x_pix, 

@@ -15,7 +15,7 @@ RUN git config --global credential.helper store && \
     git clone -b model_builder https://github.com/sinzlab/nnvision.git && \
     git clone https://github.com/CSNG-MFF/imagen.git
 
-RUN git clone https://${GITHUB_USER}:${GITHUB_TOKEN}@github.com/lucabaroni/featurevis.git
+RUN git clone https://${GITHUB_USER}:${GITHUB_TOKEN}@github.com/MathysHub/featurevis.git
 
 RUN python3.9 -m pip --no-cache-dir install torch==1.13.1 torchvision==0.14.1 torchaudio==0.13.1
 RUN python3.9 -m pip --no-cache-dir install transformers==4.35.2
