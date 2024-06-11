@@ -50,7 +50,7 @@ def black_white_preference_experiment(
 
                                                 _________ SubGroup ../position_response_img   --> neuron datasets
                                                 |
-        Group /black_white_preference   ________|________ SubGroup ../noise_img                  --> neuron datasets
+        Group /black_white_preference   ________|________ SubGroup ../noise_img               --> neuron datasets
                                                 |
                                                 |________ SubGroup ../results                 --> neuron datasets
     Prerequisite :
@@ -102,7 +102,7 @@ def black_white_preference_experiment(
     all_neurons_model.to(device)
     all_neurons_model.eval()
     
-    
+
     ## Generate the objects to fill
     sum_dot_pos   = torch.zeros((img_res[1], img_res[0]), dtype=int).to(device)
     black_stimuli = []
@@ -179,7 +179,7 @@ def black_white_preference_experiment(
 
         ## Put everything back in a tensor on the correct device
         shuffle_resp_b = torch.Tensor(shuffle_resp_b).to(device)
-        shuffle_resp_w = torch.Tensor(shuffle_resp_b).to(device)
+        shuffle_resp_w = torch.Tensor(shuffle_resp_w).to(device)
         
         all_noise_b = torch.einsum(
                             'bxy,bn->nxy', 
