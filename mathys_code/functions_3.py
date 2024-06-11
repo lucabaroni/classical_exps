@@ -33,7 +33,8 @@ def black_white_preference_experiment(
     img_res = [93,93], 
     pixel_min = -1.7876, #e.g:  (the lowest value encountered in the data we worked with)
     pixel_max =  2.1919, #e.g:  (the highest value encountered in the data we worked with)
-    device = None
+    device = None,
+    seed = 42
     ):  
     ''' This function aims to find the Signal Noise Ratio (SNR) for black and white dot stimuli for the selected neurons :
 
@@ -60,6 +61,7 @@ def black_white_preference_experiment(
     Arguments :
 
         - dot_size_in_pixels : Size of the pixels, corresponding to the size of the sides of the square
+        - seed               : Random seed for reproducibility
         - others             : explained in other functions
 
     Outputs :
@@ -75,6 +77,8 @@ def black_white_preference_experiment(
                                          format : [SNR_b, SNR_w, logSNRwb]
 
     '''
+
+    np.random.seed(seed)
 
     print(' > Black or white preference experiment')
 
@@ -266,7 +270,7 @@ def plot_logSNRwb(
     ax.scatter(logSNR_ON, y_ON, color='1', edgecolor ='k', label = 'white-dominant')
     
 
-    ## Set nice y axis
+    # ## Set nice y axis
     max_y = max(max(y_OFF), max(y_ON))
     ax.set_ylim(max_y + 0.1 * max_y, - 0.10)
 
@@ -282,10 +286,8 @@ def plot_logSNRwb(
     max_edge =  n_gap * gap
     bin_edges = np.concatenate((bin_edges, np.linspace(0,max_edge,n_gap+1))) 
 
-    print(len(logSNR_OFF))
-    print(len(logSNR_ON))
+    
     all_logSNR = logSNR_OFF+logSNR_ON
-    print(len(all_logSNR))
     weights = np.ones(len(all_logSNR)) / len(all_logSNR)
     ax_hist.hist(all_logSNR, bins=bin_edges, density = False, edgecolor='k', weights=weights)
     ax_hist.tick_params(axis="x", labelbottom=False)

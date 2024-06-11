@@ -122,14 +122,10 @@ num_samples = 15
 #####  ##   ##  #
 
 ## If overwrite is set to True, this will clean the results of the performed experiments before reperforming them
-overwrite = False 
+overwrite = True 
 
 ## (optional) Device to perform the experiments on (default will be gpu if available, cpu else)
 device=None
-
-# TODO DELETE
-device = 'cpu'
-neuron_ids = np.arange(458)
 
 ## Example Pipeline
 experiments_config = [
@@ -140,7 +136,7 @@ experiments_config = [
     # ['contrast_size_tuning_experiment_all_phases', {'h5_file':h5_file, 'all_neurons_model':all_neurons_model, 'neuron_ids':neuron_ids, 'overwrite':overwrite, 'phases':phases, 'contrasts':contrasts, 'radii':radii, 'pixel_min':pixel_min, 'pixel_max':pixel_max, 'device':device, 'size':size, 'img_res':img_res, 'neg_val':neg_val}],
     # ['orientation_tuning_experiment_all_phases', {'h5_file':h5_file, 'all_neurons_model':all_neurons_model, 'neuron_ids':neuron_ids, 'overwrite':overwrite, 'phases':phases, 'ori_shifts':ori_shifts, 'contrast':contrast, 'pixel_min':pixel_min, 'pixel_max':pixel_max, 'device':device, 'size':size, 'img_res':img_res}],
     # ['center_contrast_surround_suppression_experiment', {'h5_file':h5_file, 'all_neurons_model':all_neurons_model, 'neuron_ids':neuron_ids, 'overwrite':overwrite, 'center_contrasts_ccss':center_contrasts_ccss, 'surround_contrast':surround_contrast, 'phases':phases, 'pixel_min':pixel_min, 'pixel_max':pixel_max, 'device':device, 'size':size, 'img_res':img_res}],
-    # ['black_white_preference_experiment', {'h5_file':h5_file, 'all_neurons_model':all_neurons_model, 'neuron_ids':neuron_ids, 'overwrite':overwrite, 'dot_size_in_pixels':dot_size_in_pixels, 'contrast':contrast, 'img_res':img_res, 'pixel_min':pixel_min, 'pixel_max':pixel_max, 'device':device}],
+    ['black_white_preference_experiment', {'h5_file':h5_file, 'all_neurons_model':all_neurons_model, 'neuron_ids':neuron_ids, 'overwrite':overwrite, 'dot_size_in_pixels':dot_size_in_pixels, 'contrast':contrast, 'img_res':img_res, 'pixel_min':pixel_min, 'pixel_max':pixel_max, 'device':device, 'seed':seed}],
     # ['texture_noise_response_experiment', {'h5_file':h5_file, 'all_neurons_model':all_neurons_model, 'neuron_ids':neuron_ids, 'directory_imgs':directory_imgs, 'overwrite':overwrite, 'contrast':contrast, 'pixel_min':pixel_min, 'pixel_max':pixel_max, 'num_samples':num_samples, 'img_res':img_res, 'device':device}]
     ]
 
@@ -201,7 +197,7 @@ experiments_config = [
 ## Filtering parameters
 fit_err_thresh = 0.2
 supp_thresh = 0.1
-SNR_thresh = 2
+SNR_thresh = 0
 
 ##size_tuning_results_2
 
@@ -259,25 +255,12 @@ def execute_function(func_name, params):
     func(**params)
 
 
-# %%
-## TODO DELETE BELOW
+## TODO move to main
 
-
-import numpy as np
-## Models
-from nnvision.models.trained_models.v1_task_fine_tuned import v1_convnext_ensemble
-## Functions
-from functions   import *
-from functions_2 import *
-from functions_3 import *
-## To select the well predicted neurons 
-from surroundmodulation.utils.misc import pickleread
-## Import the config file
-
-h5_file= '/project/mathys_code/article1.h5'
-overwrite = False
-
-
+for exp in experiments_config :
+    name_function = exp[0]
+    params = exp[1]
+    result = execute_function(name_function, params)
 
 for res in results_config :
     name_function = res[0]
@@ -285,28 +268,6 @@ for res in results_config :
     result = execute_function(name_function, params)
 
 
-# %%
-# print(len(neuron_ids))
+#%%
 
 
-# for neuron_id in neuron_ids[:10] :
-#     plot_size_tuning_curve(h5_file=h5_file, neuron_id=neuron_id)
-
-
-# %%
-
-for exp in experiments_config :
-    name_function = exp[0]
-    params = exp[1]
-    result = execute_function(name_function, params)
-
-
-
-# %%
-
-weights = np.ones(corrs.shape) / len(corrs)
-plt.hist(corrs, bins=[0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1], edgecolor='k', weights=weights)
-plt.plot([0.75, 0.75], [0, 0.4], label = "Threshold")
-plt.legend()
-plt.ylabel("Proportion of Cells")
-plt.xlabel("Correlation")
