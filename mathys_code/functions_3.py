@@ -28,7 +28,7 @@ def black_white_preference_experiment(
     all_neurons_model,
     neuron_ids,   
     overwrite = False, 
-    dot_size_in_pixels=4,
+    dot_size_in_pixels=5,
     contrast = 1, 
     img_res = [93,93], 
     pixel_min = -1.7876, #e.g:  (the lowest value encountered in the data we worked with)
@@ -109,7 +109,6 @@ def black_white_preference_experiment(
     white_stimuli = []
     resp_b = []
     resp_w = []
-
 
     with torch.no_grad():
  
@@ -194,8 +193,6 @@ def black_white_preference_experiment(
                             (shuffle_resp_w).to(device)
                             )
         
-        img = all_noise_b[0]
-
     ## Fill the HDF5 file 
     with h5py.File(h5_file, 'a') as f :
 
@@ -214,10 +211,11 @@ def black_white_preference_experiment(
                 SNR_w = torch.var(pos_resp_imgs[1]).item() / torch.var(noises[1]).item()
 
                 logSNRwb = np.log10(SNR_w/SNR_b)
-
+                
                 f[subgroup_path_resp_img].create_dataset(name=neuron, data=pos_resp_imgs)
                 f[subgroup_path_noise_img].create_dataset(name=neuron, data=noises)
                 f[subgroup_path_results].create_dataset(name=neuron, data=[SNR_b, SNR_w, logSNRwb])
+
 
 def plot_logSNRwb(
     logSNR_OFF,
@@ -284,7 +282,12 @@ def plot_logSNRwb(
     max_edge =  n_gap * gap
     bin_edges = np.concatenate((bin_edges, np.linspace(0,max_edge,n_gap+1))) 
 
-    ax_hist.hist(logSNR_OFF+logSNR_ON, bins=bin_edges, density = True, edgecolor='k')
+    print(len(logSNR_OFF))
+    print(len(logSNR_ON))
+    all_logSNR = logSNR_OFF+logSNR_ON
+    print(len(all_logSNR))
+    weights = np.ones(len(all_logSNR)) / len(all_logSNR)
+    ax_hist.hist(all_logSNR, bins=bin_edges, density = False, edgecolor='k', weights=weights)
     ax_hist.tick_params(axis="x", labelbottom=False)
 
     ax.set_xlabel('log(SNR_white / SNR_black)')
@@ -476,8 +479,6 @@ def black_white_results_1(
     ## Informations to print
     n = len(neuron_ids)
     n_new = len(filtered_neuron_ids)
-    n_b = len(all_SNRb)
-    n_w = len(all_SNRw)
     mean_SNRb   = round(np.mean(all_SNRb),3)
     mean_SNRw   = round(np.mean(all_SNRw),3)
     mean_logSNR = round(np.mean(logSNR_OFF + logSNR_ON),3)
@@ -532,4 +533,13 @@ black_white_preference_experiment(
     pixel_max =  2.1919,
     device = None
     )
+# %%
+neuron_depths = pickleread("/project/mathys_code/depth_info.pickle") 
+
+black_white_results_1(
+    h5_file,
+    neuron_ids,
+    neuron_depths = neuron_depths,
+    SNR_thresh = 2
+)
 # %%

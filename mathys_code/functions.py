@@ -2622,7 +2622,7 @@ def plot_size_tuning_curve(
     plt.plot(radii*2,circular_tuning_curve, label = "center")
     plt.plot(radii*2, annular_tuning_curve, label = "surround")
     plt.xlabel("diameter (deg)")
-    plt.ylabel('response')
+    plt.ylabel('response', which='major')
     plt.legend()
     plt.title(f"Size tuning curve of the Neuron {neuron_id}")
     plt.show()
@@ -2692,6 +2692,7 @@ def plot_contrast_response(
     plt.xlabel("Center contrast")
     plt.ylabel("Response")
     plt.xscale('log')
+
     plt.show()
 
 def plot_contrast_size_tuning_curve(
@@ -2748,6 +2749,7 @@ def plot_contrast_size_tuning_curve(
     ## Set the title if no title was given
     if title is None :
         title = f"Contrast Size Tuning Curves of the neuron {neuron_id}"
+
 
     plt.legend(title='Contrast', title_fontsize='large')
     plt.title(title)
@@ -2991,12 +2993,17 @@ def plot_scatter_hist(
 
     ## The histograms
     nbins = 15
+
+    ## To show proportions 
+    weights_x = np.ones(x.shape) / len(x)
+    weights_y = np.ones(y.shape) / len(y)
+
     if log_axes :
-        ax_histx.hist(x, density = True, bins = np.logspace(np.log10(minedge), np.log10(maxedge),nbins))
-        ax_histy.hist(y, density = True, orientation='horizontal', bins = np.logspace(np.log10(minedge), np.log10(maxedge),nbins))
+        ax_histx.hist(x, density = False, weights = weights_x, bins = np.logspace(np.log10(minedge), np.log10(maxedge),nbins))
+        ax_histy.hist(y, density = False, weights = weights_y, orientation='horizontal', bins = np.logspace(np.log10(minedge), np.log10(maxedge),nbins))
     else :
-        ax_histx.hist(x, density = True, bins = np.linspace(minedge, maxedge,nbins))
-        ax_histy.hist(y, density = True, orientation='horizontal', bins = np.linspace(minedge, maxedge,nbins))
+        ax_histx.hist(x, density = False, weights = weights_x, bins = np.linspace(minedge, maxedge,nbins))
+        ax_histy.hist(y, density = False, weights = weights_y, orientation='horizontal', bins = np.linspace(minedge, maxedge,nbins))
     
     ax_histx.tick_params(axis="x", labelbottom=False)
     ax_histy.tick_params(axis="y", labelleft=False)
@@ -3158,11 +3165,13 @@ def size_tuning_results_2(
     print(f"    > The mean value of the SI is {mean_SI}")
     print(f"    > Plot :")
 
-    plt.hist(all_SI, bins = bins,edgecolor='black', density=True)
-    plt.xlabel("Suppression Index (SI)")
-    plt.ylabel("Density")
+    weights = np.ones(all_SI.shape) / len(all_SI)
+    plt.hist(all_SI, bins = bins,edgecolor='black', density=False, weights=weights)
+    plt.xlabel("Suppression Index (SI)" )
+    plt.ylabel('Distribution')
     plt.xticks(bins)
     plt.title(f"Distribution of the SI for the {len(all_SI)} neurons")
+
     plt.show()
 
     print("--------------------------------------")
@@ -3475,6 +3484,6 @@ def contrast_size_tuning_results_1(
     print("--------------------------------------")
     print()
 
-# %%
+
 
 

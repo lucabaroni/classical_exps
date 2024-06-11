@@ -598,7 +598,8 @@ def orientation_tuning_results_2(
         step  = np.abs(sub_ori[-1] - sub_ori[-2])
         edge  = sub_ori[-1] + (step/2)
         bins = np.linspace(- edge, edge,nbins+1) # The values should not be below -90 and above 90 deg
-        plt.hist(results, bins = bins,edgecolor='black', density=True )
+        weights = np.ones(results.shape) / len(results)
+        plt.hist(results, bins = bins,edgecolor='black', density=False, weights=weights )
 
         ## Annotate the plot
         plt.xticks(sub_ori)
@@ -1018,33 +1019,40 @@ def ccss_results_2(
     y=all_iso,
     title=f'Distribution of the response depending on the surround orientation\nContrast of the center : {center_contrast}',
     x_label='Normalised response for the \n orthogonal surround',
-    y_label='Normalised response for the \n parallel surround'
-    )
+    y_label='Normalised response for the \n parallel surround',
+    log_axes=False)
     print("--------------------------------------")
 
-    
 
-# h5_file = "/project/mathys_code/article1_ring.h5"
-# neuron_ids = np.arange(458)
-# fit_err_thresh = 0.2
-# orientation_tuning_results_1(h5_file=h5_file, neuron_ids=neuron_ids, fit_err_thresh=fit_err_thresh)
-# orientation_tuning_results_2(h5_file=h5_file, neuron_ids=neuron_ids, fit_err_thresh=fit_err_thresh)
+#%%
+# TODO DELETE  
+from surroundmodulation.utils.misc import pickleread
 
-# h5_file = "/project/mathys_code/article1.h5"
-# neuron_ids = np.arange(458)
-# overwrite = False
-# device = None
-# ori_shifts = np.linspace(-np.pi,np.pi,9)
-# center_contrasts_ccss = np.array([0.06,0.12,0.25,0.5,1.0])
-# fit_err_thresh = 0.2
+## Working directory
+workdir = "/project/mathys_code"
+## Name of the HDF5 file 
+h5_file = workdir + "/article1.h5"
 
-# center_contrast_surround_suppression_experiment(h5_file=h5_file, all_neurons_model=all_neurons_model, neuron_ids=neuron_ids,
-#     center_contrasts_ccss=center_contrasts_ccss,
-#     surround_contrast=1, phases=phases, pixel_min=pixel_min, pixel_max=pixel_max, device=device, size=size,img_res=img_res)
+## Select the model with all neurons
+all_neurons_model = v1_convnext_ensemble
 
-# contrast_id = 1
-# # ccss_results_1(h5_file=h5_file, neuron_ids=neuron_ids, fit_err_thresh=fit_err_thresh)
-# ccss_results_2(h5_file=h5_file, neuron_ids=neuron_ids, contrast_id=contrast_id, fit_err_thresh=fit_err_thresh)
+## Chose the indices of the neurons to work with
+n = 458
+neuron_ids = np.arange(n) ## Because 458 outputs in our model
+corrs = pickleread(workdir + "/avg_corr.pkl") ## The correlation score of the neurons
+neuron_ids = neuron_ids[corrs>0.75]
+
+overwrite = False
+device = None
+ori_shifts = np.linspace(-np.pi,np.pi,9)
+center_contrasts_ccss = np.array([0.06,0.12,0.25,0.5,1.0])
+fit_err_thresh = 0.2
+
+contrast_id = 1
+norm_center_contrast_id = contrast_id
+
+# ccss_results_1(h5_file=h5_file, neuron_ids=neuron_ids, fit_err_thresh=fit_err_thresh)
+ccss_results_2(h5_file=h5_file, neuron_ids=neuron_ids, norm_center_contrast_id=norm_center_contrast_id, contrast_id=contrast_id, fit_err_thresh=fit_err_thresh)
 #%%
 
 # ## Name of the HDF5 file 

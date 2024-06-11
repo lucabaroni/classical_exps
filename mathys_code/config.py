@@ -20,6 +20,7 @@ This is the file that will serve to configure the experiments you want to perfor
 
 '''
 ''''''
+
 # The experiments are explained with more details in the TODO rename_the_file.py file, every arguments are explained there
 #
 # List of available experiments :
@@ -126,6 +127,9 @@ overwrite = False
 ## (optional) Device to perform the experiments on (default will be gpu if available, cpu else)
 device=None
 
+# TODO DELETE
+device = 'cpu'
+neuron_ids = np.arange(458)
 
 ## Example Pipeline
 experiments_config = [
@@ -137,7 +141,7 @@ experiments_config = [
     # ['orientation_tuning_experiment_all_phases', {'h5_file':h5_file, 'all_neurons_model':all_neurons_model, 'neuron_ids':neuron_ids, 'overwrite':overwrite, 'phases':phases, 'ori_shifts':ori_shifts, 'contrast':contrast, 'pixel_min':pixel_min, 'pixel_max':pixel_max, 'device':device, 'size':size, 'img_res':img_res}],
     # ['center_contrast_surround_suppression_experiment', {'h5_file':h5_file, 'all_neurons_model':all_neurons_model, 'neuron_ids':neuron_ids, 'overwrite':overwrite, 'center_contrasts_ccss':center_contrasts_ccss, 'surround_contrast':surround_contrast, 'phases':phases, 'pixel_min':pixel_min, 'pixel_max':pixel_max, 'device':device, 'size':size, 'img_res':img_res}],
     # ['black_white_preference_experiment', {'h5_file':h5_file, 'all_neurons_model':all_neurons_model, 'neuron_ids':neuron_ids, 'overwrite':overwrite, 'dot_size_in_pixels':dot_size_in_pixels, 'contrast':contrast, 'img_res':img_res, 'pixel_min':pixel_min, 'pixel_max':pixel_max, 'device':device}],
-    ['texture_noise_response_experiment', {'h5_file':h5_file, 'all_neurons_model':all_neurons_model, 'neuron_ids':neuron_ids, 'directory_imgs':directory_imgs, 'overwrite':overwrite, 'contrast':contrast, 'pixel_min':pixel_min, 'pixel_max':pixel_max, 'num_samples':num_samples, 'img_res':img_res, 'device':device}]
+    # ['texture_noise_response_experiment', {'h5_file':h5_file, 'all_neurons_model':all_neurons_model, 'neuron_ids':neuron_ids, 'directory_imgs':directory_imgs, 'overwrite':overwrite, 'contrast':contrast, 'pixel_min':pixel_min, 'pixel_max':pixel_max, 'num_samples':num_samples, 'img_res':img_res, 'device':device}]
     ]
 
 
@@ -199,7 +203,7 @@ fit_err_thresh = 0.2
 supp_thresh = 0.1
 SNR_thresh = 2
 
-##size_tuning_results_1
+##size_tuning_results_2
 
 sort_by_std = False
 spread_to_plot = [0,15,50,85,100]
@@ -210,33 +214,39 @@ low_contrast_id  =  0
 high_contrast_id = -1
 
 ## Center Contrast Surround Suppression
-norm_center_contrast_id = -3 ## The contrast of the center, should be the same as the high contrast
-high_center_contrast_id = norm_center_contrast_id ## The contrast of the center corresponding to the 'high' contrast
-low_center_contrast_id = 1
+high_center_contrast_id      = -3 ## The contrast of the center corresponding to the 'high' contrast
+high_norm_center_contrast_id = high_center_contrast_id
+low_center_contrast_id       = 1  ## The contrast of the center corresponding to the 'low' contrast
+low_norm_center_contrast_id  = low_center_contrast_id  
 
 ## black_white_results_1
 neuron_depths = pickleread(workdir + "/depth_info.pickle") 
 
+## texture_noise_response_results
+wanted_fam_order = ['60', '56', '13', '48', '71', '18', '327', '336', '402', '38', '23', '52', '99', '393', '30'] ## The order of the textures
+
 ## Example Pipeline
 neuron_id = 0
-results_config = [
-    ['plot_size_tuning_curve', {'h5_file':h5_file, 'neuron_id':neuron_id}],
-    ['size_tuning_results_1', {'h5_file':h5_file, 'neuron_ids':neuron_ids, 'fit_err_thresh':fit_err_thresh, 'supp_thresh':supp_thresh}],
-    ['size_tuning_results_2', {'h5_file':h5_file, 'neuron_ids':neuron_ids, 'fit_err_thresh':fit_err_thresh}],
-    ['contrast_response_results_1', {'h5_file':h5_file, 'neuron_ids':neuron_ids, 'fit_err_thresh':fit_err_thresh, 'sort_by_std':sort_by_std, 'spread_to_plot':spread_to_plot}],
-    ['contrast_size_tuning_results_1', {'h5_file':h5_file, 'neuron_ids':neuron_ids, 'fit_err_thresh':fit_err_thresh, 'shift_to_plot':shift_to_plot, 'low_contrast_id':low_contrast_id, 'high_contrast_id':high_contrast_id}],
-    ['orientation_tuning_results_1', {'h5_file':h5_file, 'neuron_ids':neuron_ids, 'fit_err_thresh':fit_err_thresh}],
-    ['orientation_tuning_results_2', {'h5_file':h5_file, 'neuron_ids':neuron_ids, 'fit_err_thresh':fit_err_thresh}],
-    ['ccss_results_1', {'h5_file':h5_file, 'neuron_ids':neuron_ids, 'fit_err_thresh':fit_err_thresh}],
-    ['ccss_results_2', {'h5_file':h5_file, 'neuron_ids':neuron_ids, 'contrast_id':high_center_contrast_id, 'norm_center_contrast_id':norm_center_contrast_id, 'fit_err_thresh':fit_err_thresh}],
-    ['ccss_results_2', {'h5_file':h5_file, 'neuron_ids':neuron_ids, 'contrast_id':low_center_contrast_id, 'norm_center_contrast_id':norm_center_contrast_id, 'fit_err_thresh':fit_err_thresh}],
-    ['black_white_results_1', {'h5_file':h5_file, 'neuron_ids':neuron_ids, 'neuron_depths':neuron_depths, 'SNR_thresh':SNR_thresh}],
-    ['texture_noise_response_results_1',  {'h5_file':h5_file, 'neuron_ids':neuron_ids}],
-    ['texture_noise_response_results_2',  {'h5_file':h5_file, 'neuron_ids':neuron_ids}],
-    ['texture_noise_response_results_3',  {'h5_file':h5_file, 'neuron_ids':neuron_ids}]
-]
-    
 
+results_config = [
+    # ['plot_size_tuning_curve', {'h5_file':h5_file, 'neuron_id':neuron_id}],
+    # ['size_tuning_results_1', {'h5_file':h5_file, 'neuron_ids':neuron_ids, 'fit_err_thresh':fit_err_thresh, 'supp_thresh':supp_thresh}],
+    # ['size_tuning_results_2', {'h5_file':h5_file, 'neuron_ids':neuron_ids, 'fit_err_thresh':fit_err_thresh}],
+    # ['contrast_response_results_1', {'h5_file':h5_file, 'neuron_ids':neuron_ids, 'fit_err_thresh':fit_err_thresh, 'sort_by_std':sort_by_std, 'spread_to_plot':spread_to_plot}],
+    # ['contrast_size_tuning_results_1', {'h5_file':h5_file, 'neuron_ids':neuron_ids, 'fit_err_thresh':fit_err_thresh, 'shift_to_plot':shift_to_plot, 'low_contrast_id':low_contrast_id, 'high_contrast_id':high_contrast_id}],
+    # ['orientation_tuning_results_1', {'h5_file':h5_file, 'neuron_ids':neuron_ids, 'fit_err_thresh':fit_err_thresh}],
+    # ['orientation_tuning_results_2', {'h5_file':h5_file, 'neuron_ids':neuron_ids, 'fit_err_thresh':fit_err_thresh}],
+    # ['ccss_results_1', {'h5_file':h5_file, 'neuron_ids':neuron_ids, 'fit_err_thresh':fit_err_thresh}],
+    # ['ccss_results_2', {'h5_file':h5_file, 'neuron_ids':neuron_ids, 'contrast_id':high_center_contrast_id, 'norm_center_contrast_id':high_norm_center_contrast_id, 'fit_err_thresh':fit_err_thresh}],
+    # ['ccss_results_2', {'h5_file':h5_file, 'neuron_ids':neuron_ids, 'contrast_id':low_center_contrast_id, 'norm_center_contrast_id':low_norm_center_contrast_id, 'fit_err_thresh':fit_err_thresh}],
+    ['black_white_results_1', {'h5_file':h5_file, 'neuron_ids':neuron_ids, 'neuron_depths':neuron_depths, 'SNR_thresh':SNR_thresh}],
+    # ['texture_noise_response_results_1',  {'h5_file':h5_file, 'neuron_ids':neuron_ids, 'wanted_fam_order':wanted_fam_order}],
+    # ['texture_noise_response_results_2',  {'h5_file':h5_file, 'neuron_ids':neuron_ids, 'wanted_fam_order':wanted_fam_order}],
+    # ['texture_noise_response_results_3',  {'h5_file':h5_file, 'neuron_ids':neuron_ids}]
+]
+
+
+texture_noise_response_results_3
 def execute_function(func_name, params):
     # Get the function object by name
     func = globals().get(func_name)
@@ -274,6 +284,7 @@ for res in results_config :
     params = res[1]
     result = execute_function(name_function, params)
 
+
 # %%
 # print(len(neuron_ids))
 
@@ -281,7 +292,21 @@ for res in results_config :
 # for neuron_id in neuron_ids[:10] :
 #     plot_size_tuning_curve(h5_file=h5_file, neuron_id=neuron_id)
 
+
 # %%
 
-print(center_contrasts_ccss)
+for exp in experiments_config :
+    name_function = exp[0]
+    params = exp[1]
+    result = execute_function(name_function, params)
+
+
+
 # %%
+
+weights = np.ones(corrs.shape) / len(corrs)
+plt.hist(corrs, bins=[0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1], edgecolor='k', weights=weights)
+plt.plot([0.75, 0.75], [0, 0.4], label = "Threshold")
+plt.legend()
+plt.ylabel("Proportion of Cells")
+plt.xlabel("Correlation")

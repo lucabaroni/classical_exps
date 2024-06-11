@@ -128,12 +128,13 @@ def load_imgs(
         ## Get the family for each image
         _, _, family, _ = img_name.split('-')
         family = int(family[2:])
-
+        
         dict_fam[family] = 0
 
     ## Set the ids for every family
     for i, family in enumerate(dict_fam.keys()) : 
         dict_fam[family] = i
+
 
     ## Create a Tensor containing every image and noise sorted correctly
     tex_imgs   = torch.zeros((len(dict_fam.keys()), num_samples, *target_res)).to(device)
@@ -202,6 +203,7 @@ def texture_noise_response_experiment(
     num_samples = 15,
     img_res = [93,93],
     device = None
+
 ):
     ''' This function aims to get the responses of a model to texture and noise images :
 
@@ -292,6 +294,7 @@ def texture_noise_response_experiment(
         for family in dict_fam.keys() :
             description += f'{family}-'
         description = description[:-1]
+            
 
         f[group_path].attrs["description"]  = description
         subgroup_tex.attrs["description"]   = description
@@ -314,7 +317,8 @@ def texture_noise_response_experiment(
 
 def texture_noise_response_results_1(
     h5_file, 
-    neuron_ids
+    neuron_ids,
+    wanted_fam_order = None
 ):  
     ''' This function aims to visualise if the neurons product the same response to texture or noise images
     
@@ -325,6 +329,11 @@ def texture_noise_response_results_1(
         Filtering :
             
             TODO ???
+        
+        Arguments :
+
+            - dict_fam_order : (Optional) An array containing the families name in the desired order (make sure the names of the families match). If set to False, random order, 
+
     '''
 
     group_path    = '/texture_noise_response'
@@ -343,7 +352,7 @@ def texture_noise_response_results_1(
     print(f"    > Analysis made on {len(neuron_ids)} neurons")
     print(f"    > Plot :")
 
-    ## Get the results for every neuron shape = (n_family, n_sample, n_neurons)
+    ## Get the results for every neuron, shape = (n_family, n_sample, n_neurons)
     all_tex_resp   = []
     all_noise_resp = []
 
@@ -355,6 +364,7 @@ def texture_noise_response_results_1(
         ## Get the families id (for the plot)
         description = subgroup_tex.attrs["description"]
         family_ids  = description.split('-')
+        family_ids  = np.asarray(family_ids)
 
         for neuron_id in neuron_ids :
             
@@ -383,6 +393,7 @@ def texture_noise_response_results_1(
     std_noise_resp  = torch.zeros(mean_tex_resp.shape)
 
     n_sample = len(all_tex_resp[0])
+
     ## Plot for the mean accross neurons
     for i in range(len(mean_all_tex_resp)) :
             
@@ -397,15 +408,43 @@ def texture_noise_response_results_1(
     sem_tex_resp = std_tex_resp / math.sqrt(n_sample)
     sem_noise_resp = std_noise_resp / math.sqrt(n_sample)
 
+    ## Change the order if required
+    if wanted_fam_order is not None :
+                
+        dict_old_order = {}
+
+        ## Get a dictionnary dict[name_family] = position in array
+        pos = 0
+        for i in family_ids :
+            dict_old_order[i] = pos
+            pos += 1
+
+        wanted_fam_order = np.asarray(wanted_fam_order)
+        
+        ## Get the new order
+        new_order = []
+        for fam in wanted_fam_order :
+            new_order.append(dict_old_order[fam])
+        new_order = np.array(new_order)
+
+
     print('Mean accross every neuron')
     plt.title('Mean responses to texture and noise images')
 
-    x_ticks = family_ids 
+
+    x_ticks = np.copy(family_ids)
+
+    if wanted_fam_order is not None : 
+        x_ticks = x_ticks[new_order]
+        mean_tex_resp = mean_tex_resp[new_order]
+        mean_noise_resp = mean_noise_resp[new_order]
+        
     max_val = max(max(mean_tex_resp),max(mean_noise_resp))
     max_error = max(max(sem_tex_resp), max(sem_noise_resp))
     max_plot  = max_val + max_error
     max_plot  = max_plot + 0.05* max_plot
     y_ticks = np.arange(0,max_plot,0.5)
+
 
     plt.errorbar(x_ticks, mean_tex_resp, yerr=sem_tex_resp, fmt='o', capsize=7, capthick=2, elinewidth=2, markersize=12, color='darkgoldenrod', label='Texture')    
     plt.errorbar(x_ticks, mean_noise_resp, yerr=sem_noise_resp, fmt='o', capsize=7, capthick=2, elinewidth=2, markersize=12, color='orange', label='Noise', alpha=0.65)    
@@ -449,6 +488,12 @@ def texture_noise_response_results_1(
         plt.title(f'Responses to texture and noise images for the neuron {rand_neuron_id}')
 
         x_ticks = family_ids 
+
+        if wanted_fam_order is not None : 
+            x_ticks = x_ticks[new_order]
+            mean_tex_resp = mean_tex_resp[new_order]
+            mean_noise_resp = mean_noise_resp[new_order]
+            
         max_val = max(max(mean_tex_resp),max(mean_noise_resp))
         max_error = max(max(sem_tex_resp), max(sem_noise_resp))
         max_plot  = max_val + max_error
@@ -472,7 +517,8 @@ def texture_noise_response_results_1(
 
 def texture_noise_response_results_2(
     h5_file, 
-    neuron_ids
+    neuron_ids,
+    wanted_fam_order = None
 ):  
     ''' This function aims to visualise the average modulation index accross every neuron for each texture family.
         The modulation index is defined as so : (response_texture - response_noise) / (response_texture + response_noise)
@@ -495,7 +541,6 @@ def texture_noise_response_results_2(
     
     ## Check if the neurons are present in the data
     check_neurons_presence_error(h5_file=h5_file, list_group_path=[subgroup_noise_path,subgroup_tex_path], neuron_ids=neuron_ids)
-
 
     ## Show the results
     print("--------------------------------------")
@@ -531,6 +576,24 @@ def texture_noise_response_results_2(
     all_tex_resp   = torch.Tensor(np.stack(all_tex_resp))
     all_noise_resp = torch.Tensor(np.stack(all_noise_resp))
     
+    ## Change the order if required
+    if wanted_fam_order is not None :
+                
+        dict_old_order = {}
+        ## Get a dictionnary dict[name_family] = position in array
+        pos = 0
+        for i in family_ids :
+            dict_old_order[i] = pos
+            pos += 1
+
+        wanted_fam_order = np.asarray(wanted_fam_order)
+        
+        ## Get the new order
+        new_order = []
+        for fam in wanted_fam_order :
+            new_order.append(dict_old_order[fam])
+        new_order = np.array(new_order)
+
     ## Compute every modulation index
     all_modulation_index = (all_tex_resp - all_noise_resp) / (all_tex_resp + all_noise_resp)
 
@@ -540,6 +603,11 @@ def texture_noise_response_results_2(
     ## Average the modulation index accross every sample
     all_modulation_index = torch.mean(all_modulation_index, dim=1)
     
+    if wanted_fam_order is not None : 
+
+        family_ids = np.array(family_ids)[new_order]
+        all_modulation_index = all_modulation_index[new_order]
+
     plt.bar(family_ids, all_modulation_index, width=0.8, color = 'limegreen', edgecolor='black')
 
     minval = min(all_modulation_index)
@@ -555,7 +623,6 @@ def texture_noise_response_results_2(
     plt.show()
 
     print("--------------------------------------")
-
 
 def texture_noise_response_results_3(
     h5_file, 
@@ -624,11 +691,12 @@ def texture_noise_response_results_3(
     
     meanval = torch.mean(all_modulation_index).item()
 
-    values, bins, _ = plt.hist(all_modulation_index, edgecolor='black', bins=10, density=True, color= 'limegreen')
+    weights = np.ones(all_modulation_index.shape) / len(all_modulation_index)
+    values, bins, _ = plt.hist(all_modulation_index, edgecolor='black', bins=10, density=False, weights=weights, color= 'limegreen')
     max_hist = max(values)
 
     plt.plot([0,0], [0,max_hist + 0.1 * max_hist], 'k--', label='zero')
-    plt.plot([meanval,meanval], [0, max_hist + 0.1 * max_hist], label = 'mean')
+    plt.plot([meanval,meanval], [0, max_hist + 0.1 * max_hist], color = 'darkgoldenrod', label = 'mean')
 
     minval = min(bins)
     maxval = max(bins)
