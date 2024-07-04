@@ -50,34 +50,54 @@ for idx in tqdm(idxs):
         contrast = 0.2
     )
     d[idx] = {
-        'mei': mei, 
-        'mei_act': mei_act, 
-        'mask_mei': mei_mask,
-        'center_mask_mei': [px, py],
-        'exc_full_surr' : exc_full_surr, 
-        'exc_only_surr' : exc_only_surr, 
-        'exc_full_surr_act' : exc_full_surr_act, 
-        'exc_only_surr_act' : exc_only_surr_act, 
-        'inh_full_surr' : inh_full_surr, 
-        'inh_only_surr' : inh_only_surr, 
-        'inh_full_surr_act' : inh_full_surr_act, 
-        'inh_only_surr_act' : inh_only_surr_act, 
-        'masked_grating_max_ori' : max_ori,
-        'masked_grating_max_sf' : max_sf,
-        'max_phase_max_phase' : max_phase, 
-        'masked_grating_max_stim' : max_stim,
-        'masked_grating_max_resp' : max_resp, 
-        'size_tuning_top_radius' : top_radius,
-        'size_tuning_top_phase' : top_phase,
-        'size_tuning_top_grating' : top_grating,
-        'size_tuning_resp' : st_resp,
+        'mei': mei,                                 #MEI
+        'mei_act': mei_act,                         #Activation of the neuron after showing MEI        e.g: 2.11
+        'mask_mei': mei_mask,                       #Image containing the most important zone of the MEI
+        'center_mask_mei': [px, py],                #Position of the center of mass of the mask (because not necesseraly in the middle)
+        'exc_full_surr' : exc_full_surr,            #Maximum excitation image including surround ?
+        'exc_only_surr' : exc_only_surr,            #Surround without center (uses mask_mei ?)
+        'exc_full_surr_act' : exc_full_surr_act,    #Response activity of surround                      e.g: 2.19
+        'exc_only_surr_act' : exc_only_surr_act,    #Response activity of surround without the center   e.g: 1.01
+        'inh_full_surr' : inh_full_surr,            #Maximal inhibitory surround image 
+        'inh_only_surr' : inh_only_surr,            #Maximal inhibitory surround image without center
+        'inh_full_surr_act' : inh_full_surr_act,    #Response activity with inhibitor surround          e.g: 1.86
+        'inh_only_surr_act' : inh_only_surr_act,    #    ""                 '"         without center   e.g: 1.00
+        'masked_grating_max_ori' : max_ori,         #Orientation that generated the maximal response    e.g: 1.66
+        'masked_grating_max_sf' : max_sf,           #Frequence ?  ""              ""             ""     e.g: 3.0
+        'max_phase_max_phase' : max_phase,          #Phase        ""              ""             ""     
+        'masked_grating_max_stim' : max_stim,       #GRATINGS max stimulus masked 
+        'masked_grating_max_resp' : max_resp,       #GRATINGS max response                              e.g: 1.71
+        'size_tuning_top_radius' : top_radius,      #Size tuning top radius (in deg ?)                  e.g: 0.55 
+        'size_tuning_top_phase' : top_phase,        #Size tuning top phase                              e.g: 2.97
+        'size_tuning_top_grating' : top_grating,    #Size tuning maximal grating patch image
+        'size_tuning_resp' : st_resp,               #Response of the model for the size tuning stimuli : (rows = radius size, cols = phases)
         'oc_resps': oc_resps,
         'oc_stims': oc_stims,
         }
-    picklesave(f'/project/experiment_data/convnext/data_vtest.pickle', d)
+#%%
+## TESTS FOR MATHYS
+# plt.imshow(d[0]['mei'])
+# plt.imshow(d[0]['masked_grating_max_stim'].cpu().squeeze())
+    
+a = pd.DataFrame(d[0]['mei'])
+print(a)
+plt.imshow(a.values)
+a.to_csv("/project/experiments_convnext/test.csv", header = False, index = False)
+#temp_file = "gdp_data.txt"
+# plt.imshow(d[0]['inh_full_surr_act'])
 
-# %%
-d= pickleread('/project/experiment_data/convnext/data_v2.pickle')
+
+
+
+
+
+
+
+
+#%%
+# (f'/project/experiment_data/convnext/data_vtest.pickle', d)
+
+d= pickleread('/project/experiment_data/convnext/data_vtest.pickle')
 
 # #%% estimate size of neurons with size tuning:
 # def diameter(x1s, y1s, x2s, y2s):
