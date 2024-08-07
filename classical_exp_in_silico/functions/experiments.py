@@ -14,7 +14,7 @@ import torch
 from tqdm import tqdm
 import os
 ## Utils
-from utils import *
+from classical_exp_in_silico.functions.utils import *
 ## Image generation
 import imagen
 from imagen.image import BoundingBox
@@ -23,7 +23,7 @@ import matplotlib.image as mpimg
 from surroundmodulation.models import SingleCellModel
 ## Data storage
 import h5py
-
+from scipy.optimize import curve_fit
 
 ########################################################
 ##### PART I : Functions that perform pre-analyses #####
