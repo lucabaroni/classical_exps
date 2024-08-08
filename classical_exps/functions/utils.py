@@ -1,27 +1,30 @@
-#####################################################################
-#####    THIS CODE CONTAINS EVERY ADDITIONAL USEFUL FUNCTION    #####
-#####    ---------------------------------------------------    #####
-#####################################################################
-
-
-############################
-##### PART 0 : Imports #####
-############################
-
-## Useful
 import numpy as np
 import torch
 from itertools import combinations
 import pickle
-## Image generation
 import imagen
 from imagen.image import BoundingBox
-## Data storage
 import h5py
+import torch.nn as nn
+
 
 #############################################################
-##### PART I : Functions that help manage the HDF5 file #####
+##### Function to create single cell model #####
 #############################################################
+
+class SingleCellModel(nn.Module):
+    def __init__(self, model, idx):
+        super().__init__()
+        self.model = model
+        self.idx = idx
+    
+    def forward(self, x):
+        return self.model(x)[:, self.idx].squeeze()
+
+#############################################################
+##### Functions that help manage the HDF5 file #####
+#############################################################
+
 
 
 # As the project works with a HDF5 file, a lot of functions are making

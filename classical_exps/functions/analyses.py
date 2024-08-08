@@ -14,12 +14,12 @@ import numpy as np
 import torch
 import math
 ## Utils
-from utils import *
-from experiments import get_GSF_surround_AMRF
+from classical_exps.functions.utils import *
+from classical_exps.functions.experiments import get_GSF_surround_AMRF
 ## Plots
 import matplotlib.pyplot as plt
 from matplotlib.ticker import ScalarFormatter
-from surroundmodulation.utils.plot_utils import plot_img
+from classical_exps.functions.utils import plot_img
 ## Data storage
 import h5py
 

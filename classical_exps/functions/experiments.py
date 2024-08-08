@@ -14,13 +14,13 @@ import torch
 from tqdm import tqdm
 import os
 ## Utils
-from classical_exp_in_silico.functions.utils import *
+from classical_exps.functions.utils import *
 ## Image generation
 import imagen
 from imagen.image import BoundingBox
 import matplotlib.image as mpimg
 ## Import models 
-from surroundmodulation.models import SingleCellModel
+from classical_exps.functions.utils import SingleCellModel
 ## Data storage
 import h5py
 from scipy.optimize import curve_fit
