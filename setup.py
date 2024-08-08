@@ -12,10 +12,9 @@ setup(
     packages=find_packages(exclude=[]),
     install_requires=[
         "deeplake",
-        'torch==1.13.1',
-        'torchvision==0.14.1',
-        'torchaudio==0.13.1',
-        'transformers==4.35.2',
+        'torch',
+        'torchvision',
+        'torchaudio',
         'deeplake[enterprise]',
         'wandb',
         'moviepy',
