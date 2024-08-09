@@ -22,11 +22,9 @@ setup(
         'tqdm',
         'statsmodels',
         'param==1.5.1',
-    ],
-    dependency_links=[
-        'https://github.com/sinzlab/nnvision.git#egg=nnvision',
-        'https://github.com/MathysHub/featurevis.git#egg=featurevis',
-        'https://github.com/CSNG-MFF/imagen.git#egg=imagen',
+        'nnvision @ git+https://github.com/sinzlab/nnvision.git#egg=nnvision',
+        'featurevis @ git+https://github.com/MathysHub/featurevis.git#egg=featurevis',
+        'imagen @ git+https://github.com/CSNG-MFF/imagen.git#egg=imagen',
     ],
     url="https://github.com/lucabaroni/classical_exps.git",
 )
