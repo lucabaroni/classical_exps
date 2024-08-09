@@ -302,7 +302,7 @@ def dot_stimulation(
 
     with torch.no_grad():
         ## Generate the responses to gray screens
-        no_stim_resp= all_neurons_model(torch.ones(1,1,93,93, device=device)* (pixel_min + pixel_max)/2)
+        no_stim_resp= all_neurons_model(torch.ones(1,1,*img_res, device=device)* (pixel_min + pixel_max)/2)
 
         ## Do the dot stimulation
         for _ in range(num_dots):
@@ -329,7 +329,7 @@ def dot_stimulation(
         ## For every batch, get the responses of the all_neurons_model
         for i in tqdm(range(0, num_dots, bs)):
             ## Rescale the image to pixel_min and pixel_max
-            model_input = rescale(tensors_array[i:i+bs], -1, 1, pixel_min, pixel_max).reshape(bs, 1, 93,93).to(device)
+            model_input = rescale(tensors_array[i:i+bs], -1, 1, pixel_min, pixel_max).reshape(bs, 1, *img_res).to(device)
             resp.append(all_neurons_model(model_input))
         
         ## Merge the batches together
