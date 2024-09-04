@@ -603,7 +603,7 @@ def get_size_tuning_curves(
     with torch.no_grad():
 
         ## Create Gray stimulus to substract to the non gray stimuli
-        gray_stim = torch.ones((1, *img_res)).to(device) * ((pixel_min + pixel_max)/2)
+        gray_stim = torch.ones((1, 1, *img_res)).to(device) * ((pixel_min + pixel_max)/2)
         gray_resp = single_model(gray_stim)
 
         for i, radius in enumerate(radii) :
@@ -637,7 +637,7 @@ def get_size_tuning_curves(
             grating_center *= contrast
             
             ## Convert to the right shape for the model
-            grating_center = rescale(grating_center,-1,1,pixel_min,pixel_max).reshape(1,*img_res).to(device)
+            grating_center = rescale(grating_center,-1,1,pixel_min,pixel_max).reshape(1, 1, *img_res).to(device)
 
 
             ## Save responses for this radius, substract the gray response
@@ -681,7 +681,7 @@ def get_size_tuning_curves(
                 grating_ring   *= contrast
                 
                 ## Convert to the right shape for the model 
-                grating_ring = rescale(grating_ring,-1,1,pixel_min,pixel_max).reshape(1,*img_res).to(device)
+                grating_ring = rescale(grating_ring,-1,1,pixel_min,pixel_max).reshape(1, 1, *img_res).to(device)
                 
                 ## Save responses for this radius, substract the gray response
                 if neg_val == False :
